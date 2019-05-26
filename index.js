@@ -18,10 +18,10 @@ app.post('/', (req, res) => {
   // &user_id=U2147483697
 
   if (req.body.command === '/juego') {
-    res.send(`Así me gusta, ${user_name} estas jugando`);
+    res.send(`Así me gusta, ${req.body.user_name} estas jugando`);
   }
   if (req.body.command === '/nojuego') {
-    res.send(`Yo sabía que no tenias huevos. ${user_name} te bajaste`);
+    res.send(`Yo sabía que no tenias huevos. ${req.body.user_name} te bajaste`);
   }
 });
 
