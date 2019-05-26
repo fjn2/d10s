@@ -15,7 +15,14 @@ app.get('/', (req, res) => res.send('Hello World!'));
 
 app.post('/', (req, res) => {
   console.log(req.body);
-  res.send('Chau World!')
+  // &user_id=U2147483697
+
+  if (req.body.command === '/juego') {
+    res.send(`Así me gusta, ${user_name} estas jugando`);
+  }
+  if (req.body.command === '/nojuego') {
+    res.send(`Yo sabía que no tenias huevos. ${user_name} te bajaste`);
+  }
 });
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
