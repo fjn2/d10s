@@ -50,15 +50,15 @@ const getMatchDate = () => {
 const messagesForActions = {
   juego: (user_name) => `Así me gusta, ${user_name} estas jugando.`,
   nojuego: (user_name) => `Yo sabía que no tenias huevos. Te bajaste ${user_name}.`,
-  status: () => `El estado es el siguiente.`,
-  clear: () => `Limpiando la lista.`
+  estadopartido: () => `El estado es el siguiente.`,
+  limpiar: () => `Limpiando la lista.`
 }
 
 const actions = {
   juego: addPlayer,
   nojuego: removePlayer,
-  status: matchStatus,
-  clear: clearMatch
+  estadopartido: matchStatus,
+  limpiar: clearMatch
 };
 
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -93,9 +93,9 @@ app.post('/', (req, res) => {
     return;
   }
 
-  msg.push(messagesForActions[req.body.command.replace(/\//, '')](req.body.user_name));
+  msg.push(messagesForActions[req.body.command.replace(/\//, '')](req.body.text || req.body.user_name));
 
-  const newList = actionToExecute(req.locals.list, req.body.user_name);
+  const newList = actionToExecute(req.locals.list, req.body.text || req.body.user_name);
 
   msg.push('');
 
