@@ -2,9 +2,18 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const phrases = require('./phrases');
 const moment = require('moment');
+const axios = require('axios');
+const base64 = require('base-64');
+
+
+const AUTH_TOKEN = 'Basic ' + base64.encode('fnaveira@elementum.com:wvopnqeopin434rof2ni3f'); // ô_o
 
 const app = express();
 const port = process.env.PORT || 9000;
+
+const GUIST_ID = '441a6e74d2503c6a3ba960b838f1accf';
+const FILE_NAME = 'match.json';
+
 
 const addPlayer = (list, newPlayer) => {
   if (list.includes(newPlayer)) {
@@ -47,6 +56,34 @@ const getMatchDate = () => {
   }
 };
 
+const getGist = () => axios({
+  method: 'GET',
+  headers: {
+    authorization: AUTH_TOKEN
+  },
+  url: `https://api.github.com/gists/${GUIST_ID}`,
+}).then((resp) => {
+  const content = (resp.data.files[FILE_NAME] || {}).content || '[]';
+  return JSON.parse(content);
+});
+
+const saveInGist = (list) => axios({
+  method: 'PATCH',
+  headers: {
+    authorization: AUTH_TOKEN
+  },
+  url: `https://api.github.com/gists/${GUIST_ID}`,
+  data: {
+    "description": "The guys for the match",
+    "public": true,
+    "files": {
+      [FILE_NAME]: {
+        "content": JSON.stringify(list)
+      }
+    }
+  }
+});
+
 const messagesForActions = {
   juego: (user_name) => `Así me gusta, ${user_name} estas jugando.`,
   nojuego: (user_name) => `Yo sabía que no tenias huevos. Te bajaste ${user_name}.`,
@@ -74,13 +111,14 @@ app.get('/', (req, res) => res.send('Hola soy el Diego!'));
 
 app.use((req, res, next) => {
   // get the actual status
-  req.locals = {
-    list: [
-      'Juan',
-      'Pedro'
-    ]
-  };
-  next();
+  getGist().then((list) => {
+    req.locals = {
+      list
+    };
+    next();
+  }).catch((err) => {
+    next(err);
+  });
 });
 
 app.post('/', (req, res) => {
@@ -97,12 +135,14 @@ app.post('/', (req, res) => {
 
   const newList = actionToExecute(req.locals.list, req.body.text || req.body.user_name);
 
+  saveInGist(newList);
+
   msg.push('');
 
-  msg.push(`El partido se viene: (${getMatchDate().format('l')})`);
+  msg.push(`El partido se viene: (${getMatchDate().format('l')} 18hs)`);
   msg.push(getList(newList));
 
-  msg.push(getPhrase());
+  msg.push(`_${getPhrase()}_`);
 
   res.send(msg.join('\n'));
 });
